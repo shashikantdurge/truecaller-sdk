@@ -139,7 +139,10 @@ public class TruecallerSdkPlugin : FlutterPlugin, MethodCallHandler, EventChanne
 
             SET_CODE_CHALLENGE -> {
                 call.argument<String>(Constants.CODE_CHALLENGE)?.let {
-                    getTcSdkInstance()?.setCodeChallenge(it) ?: result.error(
+                    getTcSdkInstance()?.apply {
+                        setCodeChallenge(it)
+                        result.success(null)
+                    } ?: result.error(
                         "UNAVAILABLE", "Tc SDK instance is null.", null
                     )
                 } ?: result.error(
@@ -302,7 +305,7 @@ public class TruecallerSdkPlugin : FlutterPlugin, MethodCallHandler, EventChanne
                 .buttonTextColor(call.argument<Long>(Constants.BTN_TXT_CLR)?.toInt() ?: 0)
                 .dismissOptions(
                     call.argument<Int>(Constants.DISMISS_OPTION)
-                        ?: TcSdkOptions.DISMISS_OPTION_SECONDARY_CTA_BORDER
+                        ?: 0
                 ).build()
         }
     }
