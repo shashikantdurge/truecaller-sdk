@@ -56,26 +56,27 @@ class TcSdk {
   /// [buttonShapeOption] to set login button shape
   /// [buttonColor] to set login button color
   /// [buttonTextColor] to set login button text color
-  static initializeSDK(
-          {required int sdkOption,
-          int consentHeadingOption = TcSdkOptions.SDK_CONSENT_HEADING_LOG_IN_TO,
-          int footerType = TcSdkOptions.FOOTER_TYPE_ANOTHER_MOBILE_NO,
-          int ctaText = TcSdkOptions.CTA_TEXT_PROCEED,
-          int buttonShapeOption = TcSdkOptions.BUTTON_SHAPE_ROUNDED,
-          int? buttonColor,
-          int? buttonTextColor,
-          int dismissOption =
-              TcSdkOptions.DISMISS_OPTION_CROSS_BUTTON}) async =>
-      await _methodChannel.invokeMethod('initializeSDK', {
-        "sdkOption": sdkOption,
-        "consentHeadingOption": consentHeadingOption,
-        "footerType": footerType,
-        "ctaText": ctaText,
-        "buttonShapeOption": buttonShapeOption,
-        "buttonColor": buttonColor,
-        "buttonTextColor": buttonTextColor,
-        "dismissOption": dismissOption,
-      });
+  static Future<void> initializeSDK({
+    required int sdkOption,
+    int consentHeadingOption = TcSdkOptions.SDK_CONSENT_HEADING_LOG_IN_TO,
+    int footerType = TcSdkOptions.FOOTER_TYPE_ANOTHER_MOBILE_NO,
+    int ctaText = TcSdkOptions.CTA_TEXT_PROCEED,
+    int buttonShapeOption = TcSdkOptions.BUTTON_SHAPE_ROUNDED,
+    int? buttonColor,
+    int? buttonTextColor,
+    int dismissOption = TcSdkOptions.DISMISS_OPTION_CROSS_BUTTON,
+  }) async {
+    await _methodChannel.invokeMethod('initializeSDK', {
+      "sdkOption": sdkOption,
+      "consentHeadingOption": consentHeadingOption,
+      "footerType": footerType,
+      "ctaText": ctaText,
+      "buttonShapeOption": buttonShapeOption,
+      "buttonColor": buttonColor,
+      "buttonTextColor": buttonTextColor,
+      "dismissOption": dismissOption,
+    });
+  }
 
   /// Once you initialise the Truecaller SDK using the [initializeSDK] method, and if you are using
   /// the SDK for verification of only Truecaller users ( by setting the sdkOptions scope as
