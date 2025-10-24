@@ -100,7 +100,10 @@ public class TruecallerSdkPlugin : FlutterPlugin, MethodCallHandler, EventChanne
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
         when (call.method) {
             INITIALIZE_SDK -> {
-                getTcSdkOptions(call)?.let { TcSdk.init(it) } ?: result.error(
+                getTcSdkOptions(call)?.let {
+                    TcSdk.init(it)
+                    result.success(null)
+                } ?: result.error(
                     "UNAVAILABLE",
                     "Activity not available.",
                     null
@@ -108,13 +111,21 @@ public class TruecallerSdkPlugin : FlutterPlugin, MethodCallHandler, EventChanne
             }
 
             IS_OAUTH_FLOW_USABLE -> {
-                result.success(TcSdk.getInstance() != null && TcSdk.getInstance().isOAuthFlowUsable)
+                result.success(getTcSdkInstance() != null && getTcSdkInstance()?.isOAuthFlowUsable ?: false)
             }
 
             SET_LOCALE -> {
                 call.argument<String>(Constants.LOCALE)?.let {
-                    TcSdk.getInstance().setLocale(Locale(it))
-                }
+                    getTcSdkInstance()?.setLocale(Locale(it)) ?: result.error(
+                        "UNAVAILABLE",
+                        "Tc SDK instance is null.",
+                        null
+                    )
+                } ?: result.error(
+                    "UNAVAILABLE",
+                    "Locale is null.",
+                    null
+                )
             }
 
             GENERATE_RANDOM_CODE_VERIFIER -> {
@@ -124,29 +135,60 @@ public class TruecallerSdkPlugin : FlutterPlugin, MethodCallHandler, EventChanne
             GENERATE_CODE_CHALLENGE -> {
                 call.argument<String>(Constants.CODE_VERIFIER)?.let {
                     result.success(CodeVerifierUtil.getCodeChallenge(it))
-                }
+                } ?: result.error(
+                    "UNAVAILABLE",
+                    "Code verifier is null.",
+                    null
+                )
             }
 
             SET_CODE_CHALLENGE -> {
                 call.argument<String>(Constants.CODE_CHALLENGE)?.let {
-                    TcSdk.getInstance().setCodeChallenge(it)
-                }
+                    getTcSdkInstance()?.setCodeChallenge(it)
+                } ?: result.error(
+                    "UNAVAILABLE",
+                    "Tc SDK instance is null.",
+                    null
+                )
             }
 
             SET_OAUTH_SCOPES -> {
                 call.argument<List<String>>(Constants.SCOPES)?.let {
-                    TcSdk.getInstance().setOAuthScopes(it.toTypedArray())
-                }
+                    getTcSdkInstance()?.setOAuthScopes(it.toTypedArray()) ?: result.error(
+                        "UNAVAILABLE",
+                        "Tc SDK instance is null.",
+                        null
+                    )
+                } ?: result.error(
+                    "UNAVAILABLE",
+                    "Scopes are null.",
+                    null
+                )
             }
 
             SET_OAUTH_STATE -> {
                 call.argument<String>(Constants.OAUTH_STATE)?.let {
-                    TcSdk.getInstance().setOAuthState(it)
-                }
+                    getTcSdkInstance()?.setOAuthState(it) ?: result.error(
+                        "UNAVAILABLE",
+                        "Tc SDK instance is null.",
+                        null
+                    )
+                } ?: result.error(
+                    "UNAVAILABLE",
+                    "Tc SDK instance is null.",
+                    null
+                )
             }
 
             GET_AUTHORIZATION_CODE -> {
-                activity?.let { TcSdk.getInstance().getAuthorizationCode(it as FragmentActivity) }
+                activity?.let {
+                    getTcSdkInstance()?.getAuthorizationCode(it as FragmentActivity)
+                        ?: result.error(
+                            "UNAVAILABLE",
+                            "Tc SDK instance is null.",
+                            null
+                        )
+                }
                     ?: result.error(
                         "UNAVAILABLE",
                         "Activity not available.",
@@ -161,13 +203,17 @@ public class TruecallerSdkPlugin : FlutterPlugin, MethodCallHandler, EventChanne
                 val countryISO = call.argument<String>(Constants.COUNTRY_ISO) ?: "IN"
                 activity?.let {
                     try {
-                        TcSdk.getInstance()
-                            .requestVerification(
+                        getTcSdkInstance()
+                            ?.requestVerification(
                                 countryISO,
                                 phoneNumber,
                                 verificationCallback,
                                 it as FragmentActivity
-                            )
+                            ) ?: result.error(
+                            "UNAVAILABLE",
+                            "Tc SDK instance is null.",
+                            null
+                        )
                     } catch (e: RuntimeException) {
                         result.error(e.message ?: "UNAVAILABLE", e.message ?: "UNAVAILABLE", null)
                     }
@@ -176,35 +222,77 @@ public class TruecallerSdkPlugin : FlutterPlugin, MethodCallHandler, EventChanne
             }
 
             VERIFY_OTP -> {
-                val firstName =
-                    call.argument<String>(Constants.FIRST_NAME)?.takeUnless(String::isBlank)
-                        ?: return result.error("Invalid name", "Can't be null or empty", null)
-                val lastName = call.argument<String>(Constants.LAST_NAME) ?: ""
-                val trueProfile = TrueProfile.Builder(firstName, lastName).build()
-                val otp = call.argument<String>(Constants.OTP)?.takeUnless(String::isBlank)
-                    ?: return result.error("Invalid otp", "Can't be null or empty", null)
-                TcSdk.getInstance().verifyOtp(
-                    trueProfile,
-                    otp,
-                    verificationCallback
-                )
+                try {
+
+                    val firstName =
+                        call.argument<String>(Constants.FIRST_NAME)?.takeUnless(String::isBlank)
+                            ?: return result.error("Invalid name", "Can't be null or empty", null)
+                    val lastName = call.argument<String>(Constants.LAST_NAME) ?: ""
+                    val trueProfile = TrueProfile.Builder(firstName, lastName).build()
+                    val otp = call.argument<String>(Constants.OTP)?.takeUnless(String::isBlank)
+                        ?: return result.error("Invalid otp", "Can't be null or empty", null)
+                    getTcSdkInstance()?.verifyOtp(
+                        trueProfile,
+                        otp,
+                        verificationCallback
+                    ) ?: result.error(
+                        "UNAVAILABLE",
+                        "Tc SDK instance is null.",
+                        null
+                    )
+                } catch (e: Exception) {
+                    result.error(
+                        e.message ?: "UNAVAILABLE",
+                        e.message ?: "UNAVAILABLE",
+                        e.stackTrace
+                    )
+                }
             }
 
             VERIFY_MISSED_CALL -> {
-                val firstName =
-                    call.argument<String>(Constants.FIRST_NAME)?.takeUnless(String::isBlank)
-                        ?: return result.error("Invalid name", "Can't be null or empty", null)
-                val lastName = call.argument<String>(Constants.LAST_NAME) ?: ""
-                val trueProfile = TrueProfile.Builder(firstName, lastName).build()
-                TcSdk.getInstance().verifyMissedCall(
-                    trueProfile,
-                    verificationCallback
-                )
+                try {
+                    val firstName =
+                        call.argument<String>(Constants.FIRST_NAME)?.takeUnless(String::isBlank)
+                            ?: return result.error("Invalid name", "Can't be null or empty", null)
+                    val lastName = call.argument<String>(Constants.LAST_NAME) ?: ""
+                    val trueProfile = TrueProfile.Builder(firstName, lastName).build()
+                    getTcSdkInstance()?.verifyMissedCall(
+                        trueProfile,
+                        verificationCallback
+                    ) ?: result.error(
+                        "UNAVAILABLE",
+                        "Tc SDK instance is null.",
+                        null
+                    )
+                } catch (e: Exception) {
+                    result.error(
+                        e.message ?: "UNAVAILABLE",
+                        e.message ?: "UNAVAILABLE",
+                        e.stackTrace
+                    )
+                }
+
             }
 
             else -> {
                 result.notImplemented()
             }
+        }
+    }
+
+    fun tcSdkIsInitialized(): Boolean {
+        return try {
+            TcSdk.getInstance() != null
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    fun getTcSdkInstance(): TcSdk? {
+        return try {
+            TcSdk.getInstance()
+        } catch (e: Exception) {
+            null
         }
     }
 
@@ -237,7 +325,7 @@ public class TruecallerSdkPlugin : FlutterPlugin, MethodCallHandler, EventChanne
                 .buttonTextColor(call.argument<Long>(Constants.BTN_TXT_CLR)?.toInt() ?: 0)
                 .dismissOptions(
                     call.argument<Int>(Constants.DISMISS_OPTION)
-                        ?: 0
+                        ?: TcSdkOptions.DISMISS_OPTION_SECONDARY_CTA_BORDER
                 )
                 .build()
         }
@@ -414,12 +502,12 @@ public class TruecallerSdkPlugin : FlutterPlugin, MethodCallHandler, EventChanne
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
         return if (requestCode == TcSdk.SHARE_PROFILE_REQUEST_CODE) {
-            TcSdk.getInstance().onActivityResultObtained(
+            getTcSdkInstance()?.onActivityResultObtained(
                 activity as FragmentActivity,
                 requestCode,
                 resultCode,
                 data
-            )
+            ) ?: false
         } else false
     }
 
