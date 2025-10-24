@@ -104,9 +104,7 @@ public class TruecallerSdkPlugin : FlutterPlugin, MethodCallHandler, EventChanne
                     TcSdk.init(it)
                     result.success(null)
                 } ?: result.error(
-                    "UNAVAILABLE",
-                    "Activity not available.",
-                    null
+                    "UNAVAILABLE", "Activity not available.", null
                 )
             }
 
@@ -115,16 +113,15 @@ public class TruecallerSdkPlugin : FlutterPlugin, MethodCallHandler, EventChanne
             }
 
             SET_LOCALE -> {
-                call.argument<String>(Constants.LOCALE)?.let {
-                    getTcSdkInstance()?.setLocale(Locale(it)) ?: result.error(
-                        "UNAVAILABLE",
-                        "Tc SDK instance is null.",
-                        null
+                call.argument<String>(Constants.LOCALE)?.let { localeStr ->
+                    getTcSdkInstance()?.apply {
+                        setLocale(Locale(localeStr))
+                        result.success(null)
+                    } ?: result.error(
+                        "UNAVAILABLE", "Tc SDK instance is null.", null
                     )
                 } ?: result.error(
-                    "UNAVAILABLE",
-                    "Locale is null.",
-                    null
+                    "UNAVAILABLE", "Locale is null.", null
                 )
             }
 
@@ -136,64 +133,57 @@ public class TruecallerSdkPlugin : FlutterPlugin, MethodCallHandler, EventChanne
                 call.argument<String>(Constants.CODE_VERIFIER)?.let {
                     result.success(CodeVerifierUtil.getCodeChallenge(it))
                 } ?: result.error(
-                    "UNAVAILABLE",
-                    "Code verifier is null.",
-                    null
+                    "UNAVAILABLE", "Code verifier is null.", null
                 )
             }
 
             SET_CODE_CHALLENGE -> {
                 call.argument<String>(Constants.CODE_CHALLENGE)?.let {
-                    getTcSdkInstance()?.setCodeChallenge(it)
+                    getTcSdkInstance()?.setCodeChallenge(it) ?: result.error(
+                        "UNAVAILABLE", "Tc SDK instance is null.", null
+                    )
                 } ?: result.error(
-                    "UNAVAILABLE",
-                    "Tc SDK instance is null.",
-                    null
+                    "UNAVAILABLE", "Tc SDK instance is null.", null
                 )
             }
 
             SET_OAUTH_SCOPES -> {
                 call.argument<List<String>>(Constants.SCOPES)?.let {
-                    getTcSdkInstance()?.setOAuthScopes(it.toTypedArray()) ?: result.error(
-                        "UNAVAILABLE",
-                        "Tc SDK instance is null.",
-                        null
+                    getTcSdkInstance()?.apply {
+                        setOAuthScopes(it.toTypedArray())
+                        result.success(null)
+                    } ?: result.error(
+                        "UNAVAILABLE", "Tc SDK instance is null.", null
                     )
                 } ?: result.error(
-                    "UNAVAILABLE",
-                    "Scopes are null.",
-                    null
+                    "UNAVAILABLE", "Scopes are null.", null
                 )
             }
 
             SET_OAUTH_STATE -> {
                 call.argument<String>(Constants.OAUTH_STATE)?.let {
-                    getTcSdkInstance()?.setOAuthState(it) ?: result.error(
-                        "UNAVAILABLE",
-                        "Tc SDK instance is null.",
-                        null
+                    getTcSdkInstance()?.apply {
+                        setOAuthState(it)
+                        result.success(null)
+                    } ?: result.error(
+                        "UNAVAILABLE", "Tc SDK instance is null.", null
                     )
                 } ?: result.error(
-                    "UNAVAILABLE",
-                    "Tc SDK instance is null.",
-                    null
+                    "UNAVAILABLE", "Tc SDK instance is null.", null
                 )
             }
 
             GET_AUTHORIZATION_CODE -> {
                 activity?.let {
-                    getTcSdkInstance()?.getAuthorizationCode(it as FragmentActivity)
-                        ?: result.error(
-                            "UNAVAILABLE",
-                            "Tc SDK instance is null.",
-                            null
-                        )
-                }
-                    ?: result.error(
-                        "UNAVAILABLE",
-                        "Activity not available.",
-                        null
+                    getTcSdkInstance()?.apply {
+                        getAuthorizationCode(it as FragmentActivity)
+                        result.success(null)
+                    } ?: result.error(
+                        "UNAVAILABLE", "Tc SDK instance is null.", null
                     )
+                } ?: result.error(
+                    "UNAVAILABLE", "Activity not available.", null
+                )
             }
 
             REQUEST_VERIFICATION -> {
@@ -203,22 +193,21 @@ public class TruecallerSdkPlugin : FlutterPlugin, MethodCallHandler, EventChanne
                 val countryISO = call.argument<String>(Constants.COUNTRY_ISO) ?: "IN"
                 activity?.let {
                     try {
-                        getTcSdkInstance()
-                            ?.requestVerification(
+                        getTcSdkInstance()?.apply {
+                            requestVerification(
                                 countryISO,
                                 phoneNumber,
                                 verificationCallback,
                                 it as FragmentActivity
-                            ) ?: result.error(
-                            "UNAVAILABLE",
-                            "Tc SDK instance is null.",
-                            null
+                            )
+                            result.success(null)
+                        } ?: result.error(
+                            "UNAVAILABLE", "Tc SDK instance is null.", null
                         )
                     } catch (e: RuntimeException) {
                         result.error(e.message ?: "UNAVAILABLE", e.message ?: "UNAVAILABLE", null)
                     }
-                }
-                    ?: result.error("UNAVAILABLE", "Activity not available.", null)
+                } ?: result.error("UNAVAILABLE", "Activity not available.", null)
             }
 
             VERIFY_OTP -> {
@@ -231,20 +220,17 @@ public class TruecallerSdkPlugin : FlutterPlugin, MethodCallHandler, EventChanne
                     val trueProfile = TrueProfile.Builder(firstName, lastName).build()
                     val otp = call.argument<String>(Constants.OTP)?.takeUnless(String::isBlank)
                         ?: return result.error("Invalid otp", "Can't be null or empty", null)
-                    getTcSdkInstance()?.verifyOtp(
-                        trueProfile,
-                        otp,
-                        verificationCallback
-                    ) ?: result.error(
-                        "UNAVAILABLE",
-                        "Tc SDK instance is null.",
-                        null
+                    getTcSdkInstance()?.apply {
+                        verifyOtp(
+                            trueProfile, otp, verificationCallback
+                        )
+                        result.success(null)
+                    } ?: result.error(
+                        "UNAVAILABLE", "Tc SDK instance is null.", null
                     )
                 } catch (e: Exception) {
                     result.error(
-                        e.message ?: "UNAVAILABLE",
-                        e.message ?: "UNAVAILABLE",
-                        e.stackTrace
+                        e.message ?: "UNAVAILABLE", e.message ?: "UNAVAILABLE", e.stackTrace
                     )
                 }
             }
@@ -256,19 +242,17 @@ public class TruecallerSdkPlugin : FlutterPlugin, MethodCallHandler, EventChanne
                             ?: return result.error("Invalid name", "Can't be null or empty", null)
                     val lastName = call.argument<String>(Constants.LAST_NAME) ?: ""
                     val trueProfile = TrueProfile.Builder(firstName, lastName).build()
-                    getTcSdkInstance()?.verifyMissedCall(
-                        trueProfile,
-                        verificationCallback
-                    ) ?: result.error(
-                        "UNAVAILABLE",
-                        "Tc SDK instance is null.",
-                        null
+                    getTcSdkInstance()?.apply {
+                        verifyMissedCall(
+                            trueProfile, verificationCallback
+                        )
+                        result.success(null)
+                    } ?: result.error(
+                        "UNAVAILABLE", "Tc SDK instance is null.", null
                     )
                 } catch (e: Exception) {
                     result.error(
-                        e.message ?: "UNAVAILABLE",
-                        e.message ?: "UNAVAILABLE",
-                        e.stackTrace
+                        e.message ?: "UNAVAILABLE", e.message ?: "UNAVAILABLE", e.stackTrace
                     )
                 }
 
@@ -298,36 +282,28 @@ public class TruecallerSdkPlugin : FlutterPlugin, MethodCallHandler, EventChanne
 
     private fun getTcSdkOptions(call: MethodCall): TcSdkOptions? {
         return activity?.let {
-            TcSdkOptions.Builder(it, oAuthCallback)
-                .sdkOptions(
-                    call.argument<Int>(Constants.SDK_OPTION)
-                        ?: TcSdkOptions.OPTION_VERIFY_ONLY_TC_USERS
-                )
-                .consentHeadingOption(
-                    call.argument<Int>(Constants.CONSENT_HEADING_OPTION)
-                        ?: TcSdkOptions.SDK_CONSENT_HEADING_LOG_IN_TO
-                )
-                .loginTextPrefix(
-                    call.argument<Int>(Constants.LOGIN_TEXT_PRE)
-                        ?: TcSdkOptions.LOGIN_TEXT_PREFIX_TO_GET_STARTED
-                )
-                .footerType(
-                    call.argument<Int>(Constants.FOOTER_TYPE)
-                        ?: TcSdkOptions.FOOTER_TYPE_ANOTHER_MOBILE_NO
-                )
-                .ctaText(
-                    call.argument<Int>(Constants.CTA_TEXT_PRE) ?: TcSdkOptions.CTA_TEXT_PROCEED
-                )
-                .buttonShapeOptions(
-                    call.argument<Int>(Constants.BTN_SHAPE) ?: TcSdkOptions.BUTTON_SHAPE_ROUNDED
-                )
-                .buttonColor(call.argument<Long>(Constants.BTN_CLR)?.toInt() ?: 0)
+            TcSdkOptions.Builder(it, oAuthCallback).sdkOptions(
+                call.argument<Int>(Constants.SDK_OPTION)
+                    ?: TcSdkOptions.OPTION_VERIFY_ONLY_TC_USERS
+            ).consentHeadingOption(
+                call.argument<Int>(Constants.CONSENT_HEADING_OPTION)
+                    ?: TcSdkOptions.SDK_CONSENT_HEADING_LOG_IN_TO
+            ).loginTextPrefix(
+                call.argument<Int>(Constants.LOGIN_TEXT_PRE)
+                    ?: TcSdkOptions.LOGIN_TEXT_PREFIX_TO_GET_STARTED
+            ).footerType(
+                call.argument<Int>(Constants.FOOTER_TYPE)
+                    ?: TcSdkOptions.FOOTER_TYPE_ANOTHER_MOBILE_NO
+            ).ctaText(
+                call.argument<Int>(Constants.CTA_TEXT_PRE) ?: TcSdkOptions.CTA_TEXT_PROCEED
+            ).buttonShapeOptions(
+                call.argument<Int>(Constants.BTN_SHAPE) ?: TcSdkOptions.BUTTON_SHAPE_ROUNDED
+            ).buttonColor(call.argument<Long>(Constants.BTN_CLR)?.toInt() ?: 0)
                 .buttonTextColor(call.argument<Long>(Constants.BTN_TXT_CLR)?.toInt() ?: 0)
                 .dismissOptions(
                     call.argument<Int>(Constants.DISMISS_OPTION)
                         ?: TcSdkOptions.DISMISS_OPTION_SECONDARY_CTA_BORDER
-                )
-                .build()
+                ).build()
         }
     }
 
@@ -503,10 +479,7 @@ public class TruecallerSdkPlugin : FlutterPlugin, MethodCallHandler, EventChanne
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
         return if (requestCode == TcSdk.SHARE_PROFILE_REQUEST_CODE) {
             getTcSdkInstance()?.onActivityResultObtained(
-                activity as FragmentActivity,
-                requestCode,
-                resultCode,
-                data
+                activity as FragmentActivity, requestCode, resultCode, data
             ) ?: false
         } else false
     }
