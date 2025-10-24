@@ -233,7 +233,7 @@ public class TruecallerSdkPlugin : FlutterPlugin, MethodCallHandler, EventChanne
                     )
                 } catch (e: Exception) {
                     result.error(
-                        e.message ?: "UNAVAILABLE", e.message ?: "UNAVAILABLE", e.stackTrace
+                        e.message ?: "UNAVAILABLE", e.message ?: "UNAVAILABLE", e.stackTraceToString()
                     )
                 }
             }
@@ -255,7 +255,7 @@ public class TruecallerSdkPlugin : FlutterPlugin, MethodCallHandler, EventChanne
                     )
                 } catch (e: Exception) {
                     result.error(
-                        e.message ?: "UNAVAILABLE", e.message ?: "UNAVAILABLE", e.stackTrace
+                        e.message ?: "UNAVAILABLE", e.message ?: "UNAVAILABLE", e.stackTraceToString()
                     )
                 }
 
@@ -264,14 +264,6 @@ public class TruecallerSdkPlugin : FlutterPlugin, MethodCallHandler, EventChanne
             else -> {
                 result.notImplemented()
             }
-        }
-    }
-
-    fun tcSdkIsInitialized(): Boolean {
-        return try {
-            TcSdk.getInstance() != null
-        } catch (e: Exception) {
-            false
         }
     }
 
